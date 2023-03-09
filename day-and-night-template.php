@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Day and Night Design Template
- * Plugin URI: https://example.com/day-and-night-template/
- * Description: Switches the page template based on the time of day.
+ * Plugin Name: Day and Night Design
+ * Plugin URI: https://github.com/vencerConsul/Day-and-night-plugin
+ * Description: Switches the bullshit page base on shit time
  * Version: 1.1
- * Author: Vencer Pogi
- * Author URI: https://example.com/
+ * Author: Vencer Olermo
+ * Author URI: https://github.com/vencerConsul
  * License: GPL2
  */
 // Set the timezone based on the user's location
@@ -19,7 +19,6 @@ function set_homepage_based_on_time() {
     $is_enabled = get_option('set_homepage_enabled', true);
     
     if (!$is_enabled) {
-        // Set the default front page
         $default_front_page = get_option('default_front_page', 0);
         if ($default_front_page) {
             update_option('show_on_front', 'page');
@@ -50,7 +49,6 @@ function set_homepage_based_on_time() {
 add_action('wp', 'set_homepage_based_on_time');
 
 function save_default_front_page() {
-    // Save the current front page as the default front page
     $default_front_page = get_option('page_on_front', 0);
     update_option('default_front_page', $default_front_page);
 }
@@ -58,7 +56,7 @@ function save_default_front_page() {
 register_activation_hook(__FILE__, 'save_default_front_page');
 
 
-function homepage_settings_page() {
+function day_and_night_settings_page() {
     if (isset($_POST['daytime_homepage_title'])) {
         update_option('daytime_homepage_title', $_POST['daytime_homepage_title']);
     }
@@ -78,16 +76,28 @@ function homepage_settings_page() {
             width: 100%;
             border-radius: 20px;
         }
+        .wrap{
+            max-width: 100%;
+            background: #ffffff;
+            padding: 50px;
+            border-radius: 20px;
+        }
+        .__venz_plugin_title{
+            margin-bottom: 30px !important;
+        }
     </style>
     <div class="wrap">
-        <h1>Homepage Settings</h1>
-        <div class="__venz_plugin">
+        <h1 class="__venz_plugin_title">Setup Homepage Settings</h1>
+        <div class="__venz_plugin_image">
             <img class="__venz_plugin_banner" src="<?php echo plugins_url( 'day-and-night.png', __FILE__ ); ?>" alt="the bullshit">
         </div>
+        <p class="__venz_plugin_description">
+        The Day and Night Design plugin is a useful tool for WordPress users who want to create a dynamic and engaging website design that changes with the time of day. With this plugin, users can create a distinct design for both daytime and nighttime, which will be automatically switched based on the time of the day. During the day, the website can be displayed with bright, bold colors, while at night, a more muted and darker color palette can be used to enhance the user's experience. This plugin is perfect for businesses that have different audiences at different times of the day, such as restaurants or nightclubs. Overall, the Day and Night Design plugin provides an easy and effective way to create a unique and engaging website design that stands out from the crowd.
+        </p>
         <form method="post">
             <table class="form-table">
                 <tr>
-                    <th scope="row"><label for="daytime_homepage_title">Daytime Homepage Title</label></th>
+                    <th scope="row"><label for="daytime_homepage_title">Daytime Page</label></th>
                     <td>
                         <select name="daytime_homepage_title" id="daytime_homepage_title">
                             <?php
@@ -101,7 +111,7 @@ function homepage_settings_page() {
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="nighttime_homepage_title">Nighttime Homepage Title</label></th>
+                    <th scope="row"><label for="nighttime_homepage_title">Nighttime Page</label></th>
                     <td>
                         <select name="nighttime_homepage_title" id="nighttime_homepage_title">
                             <?php
@@ -121,6 +131,7 @@ function homepage_settings_page() {
                 </td>
             </tr>
         </table>
+        <p>If the Day and Night Design feature is disabled, the default front page will be displayed</p>
         <?php submit_button(); ?>
     </form>
 </div>
@@ -131,11 +142,11 @@ function homepage_settings_page() {
 function add_homepage_settings_submenu_page() {
 add_submenu_page(
     'options-general.php',
-    'Homepage Settings',
-    'Homepage Settings',
+    'Day and Night Design',
+    'Day and Night',
     'manage_options',
-    'homepage-settings',
-    'homepage_settings_page'
+    'day-and-night-settings',
+    'day_and_night_settings_page'
     );
 }
 
