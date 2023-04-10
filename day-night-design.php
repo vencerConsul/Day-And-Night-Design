@@ -107,11 +107,14 @@ class DayAndNightDesign
             return;
         }
 
-        $hour = strtotime(date('H:i'));
-        $daytime_start = strtotime($timeFrom);
-        $daytime_end = strtotime($timeTo);
+        $hour = date('H:i');
+        $daytime_start = $timeFrom;
+        $daytime_end = $timeTo;
+        $currentTime = DateTime::createFromFormat('H:i', $hour);
+        $start = DateTime::createFromFormat('H:i', $daytime_start);
+        $end = DateTime::createFromFormat('H:i', $daytime_end);
 
-        if ($hour >= $daytime_start && $hour < $daytime_end) {
+        if ($currentTime > $start && $currentTime < $end) {
             $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
             if ($nighttime_page) {
                 update_option('show_on_front', 'page');
