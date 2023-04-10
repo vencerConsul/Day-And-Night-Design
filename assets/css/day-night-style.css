@@ -166,6 +166,7 @@ div.updated {
     border: 0;
     padding: 10px 20px;
     transition: 0.3s;
+    border-radius: 10px;
 }
 
 .v-container form #submit:hover {
