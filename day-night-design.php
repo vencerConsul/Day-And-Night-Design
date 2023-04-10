@@ -295,7 +295,7 @@ class DayAndNightDesign
                             </div>
                             <div class="v-form-fields">
                                 <label for="nightTime">Night Time</label>
-                                <select name="nighttime_homepage_title" id="nighttime_homepage_title">
+                                <select name="nighttime_homepage_title" id="nightTime">
                                     <?php
                                     foreach ($pages as $page) {
                                         $selected = ($nighttime_homepage_title == $page->post_title) ? 'selected' : '';
