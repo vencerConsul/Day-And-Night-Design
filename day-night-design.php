@@ -27,7 +27,6 @@ class DayAndNightDesign
         add_action('admin_menu', array($this, 'add_homepage_settings_submenu_page'));
         add_action('add_meta_boxes', array($this, 'custom_meta_box'));
         add_action('save_post', array($this, 'save_custom_field'));
-        add_action('template_redirect', array($this, 'redirect_to_night_page'));
     }
 
 
@@ -117,12 +116,16 @@ class DayAndNightDesign
             if ($nighttime_page) {
                 update_option('show_on_front', 'page');
                 update_option('page_on_front', $nighttime_page->ID);
+                add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
+                $this->redirect_to_night_page('night');
             }
         } else {
             $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
             if ($daytime_page) {
                 update_option('show_on_front', 'page');
                 update_option('page_on_front', $daytime_page->ID);
+                add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
+                $this->redirect_to_night_page('day');
             }
         }
     }
@@ -136,16 +139,15 @@ class DayAndNightDesign
     }
 
 
-    function redirect_to_night_page()
+    function redirect_to_night_page($mode)
     {
-        // Check if the set_homepage_enabled option is true
         $is_enabled = get_option('set_homepage_enabled', true);
         if ($is_enabled) {
-            // Get the current page ID
             $page_id = get_the_ID();
+            var_dump(get_post_meta($page_id, 'pageDay', true));
+            var_dump(get_post_meta($page_id, 'pageNight', true));
             // Check if the current page has a custom field of 'day'
-            $is_day_page = get_post_meta($page_id, '_custom_field', true) === 'day';
-            if ($is_day_page) {
+            if ($mode == 'night') {
                 // Get the night page ID for the current day page
                 $night_page_id = get_post_meta($page_id, 'pageNight', true);
                 if ($night_page_id) {
@@ -216,17 +218,6 @@ class DayAndNightDesign
         );
         $pagesDay = get_posts($args);
 
-        // Redirect pageDay to their respective pageNight
-        // if ($is_enabled) {
-        //     foreach ($pagesDay as $pageDay) {
-        //         $selected_night_page_id = get_post_meta($pageDay->ID, 'pageNight', true);
-        //         if (!empty($selected_night_page_id)) {
-        //             wp_redirect(get_permalink($selected_night_page_id));
-        //             exit;
-        //         }
-        //     }
-        // }
-
         $args2 = array(
             'post_type' => 'page',
             'meta_query' => array(
@@ -238,10 +229,11 @@ class DayAndNightDesign
         );
         $pagesNight = get_posts($args2);
 
-        if (isset($_POST['pageNight']) && isset($_POST['pageNight'])) {
+        if (isset($_POST['pageNight'])) {
             foreach ($pagesDay as $pageDay) {
                 if (isset($_POST['pageNight'][$pageDay->ID])) {
                     update_post_meta($pageDay->ID, 'pageNight', $_POST['pageNight'][$pageDay->ID]);
+                    update_post_meta($_POST['pageNight'][$pageDay->ID], 'pageDay', $pageDay->ID);
                 }
             }
         }
@@ -269,7 +261,7 @@ class DayAndNightDesign
             <?= settings_errors() ?>
             <h3>Introduction</h3>
             <p class="v-description">
-                The Day and Night Design plugin allows users to create a dynamic website design that changes with the time of day. It automatically switches between a bright, bold color scheme for daytime and a darker, muted palette for nighttime. This is ideal for businesses with different audiences at different times of day, such as restaurants or nightclubs, and creates a unique and engaging website design.
+                The Day and Night Design allows website owners to create a dynamic website design that changes with the time of day. It automatically switches between a bright, bold color scheme for daytime and a darker, muted palette for nighttime. This is ideal for businesses with different audiences at different times of day, such as restaurants or nightclubs, and creates a unique and engaging website design.
             </p>
             <form method="POST">
                 <div class="v-form">
@@ -314,8 +306,8 @@ class DayAndNightDesign
                             </div>
                         </div>
                     </div>
-                    <h4>Set Night Design for Inner Pages</h4>
-                    <div class="v-form-group">
+                    <?php if (count($pagesDay) > 0) { ?>
+                        <h4>Set Night Design for Inner Pages</h4>
                         <div class="v-form-pages">
                             <table>
                                 <thead>
@@ -332,7 +324,7 @@ class DayAndNightDesign
                                             </td>
                                             <td>
                                                 <select name="pageNight[<?php echo $pageDay->ID; ?>]">
-                                                    <option value="">-- Select a page --</option>
+                                                    <option value="">-- Select page --</option>
                                                     <?php foreach ($pagesNight as $pageNight) { ?>
                                                         <option value="<?php echo $pageNight->ID; ?>" <?php selected(get_post_meta($pageDay->ID, 'pageNight', true), $pageNight->ID); ?>><?php echo $pageNight->post_title; ?></option>
                                                     <?php } ?>
@@ -343,7 +335,10 @@ class DayAndNightDesign
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    <?php } else { ?>
+                        <h4>No current page with Design mode. Choose a Design mode for your pages</h4>
+                        <p>Note: If you have a existing page, just navigate to the page you want to add a night design and choose a "Design mode" on the right side of your page editor</p>
+                    <?php } ?>
                 </div>
                 <?php submit_button(); ?>
             </form>

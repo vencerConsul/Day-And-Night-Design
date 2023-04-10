@@ -110,10 +110,10 @@ div.updated {
 }
 
 .v-container .v-form {
-    /* background: #ffffff; */
+    background: #ffffff;
     border-radius: 10px;
     overflow: hidden;
-    /* padding: 20px; */
+    padding: 20px;
 }
 
 .v-container .v-form h3 {
@@ -132,6 +132,10 @@ div.updated {
 .v-container .v-form input,
 .v-container .v-form select {
     border: 1px solid #dddddd;
+    min-height: unset !important;
+    padding: 10px;
+    width: 100%;
+    max-width: unset;
 }
 
 .v-form-group {
@@ -180,11 +184,32 @@ div.updated {
     padding: 8px;
     text-align: left;
 }
+.v-container table select {
+    border: 0 !important;
+    padding: 10px;
+    width: 100%;
+    max-width: unset;
+    outline: none !important;
+    box-shadow: none !important;
+}
 
 .v-container th {
     background-color: #ddd;
 }
 
-.v-container tr:nth-child(even) {
+/* .v-container tr:nth-child(even) {
     background-color: #f2f2f2;
+} */
+
+@media screen and (max-width: 1024px) {
+    .v-form-group {
+        width: 100%;
+        max-width: 60%;
+    }
+}
+@media screen and (max-width: 768px) {
+    .v-form-group {
+        width: 100%;
+        max-width: 100%;
+    }
 }
