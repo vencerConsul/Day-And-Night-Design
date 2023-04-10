@@ -144,8 +144,8 @@ class DayAndNightDesign
         $is_enabled = get_option('set_homepage_enabled', true);
         if ($is_enabled) {
             $page_id = get_the_ID();
-            var_dump(get_post_meta($page_id, 'pageDay', true));
-            var_dump(get_post_meta($page_id, 'pageNight', true));
+            // var_dump(get_post_meta($page_id, 'pageDay', true));
+            // var_dump(get_post_meta($page_id, 'pageNight', true));
             // Check if the current page has a custom field of 'day'
             if ($mode == 'night') {
                 // Get the night page ID for the current day page
