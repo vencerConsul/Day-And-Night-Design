@@ -5,4 +5,11 @@ window.onload = () => {
     switchToggle.addEventListener('change', () => {
         switchForm.submit();
     })
+    
+
+    // // 
+    // const slectPageNight = document.querySelector('#slectPageNight');
+    // slectPageNight.addEventListener('change', () => {
+    //     switchForm.submit();
+    // })
 }
