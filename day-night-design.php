@@ -89,6 +89,25 @@ class DayAndNightDesign
         }
     }
 
+    // public function removeFirstZero($data)
+    // {
+    //     if (substr($data, 0, 1) === '0') {
+    //         $data = ltrim($data, '0');
+    //     }
+    //     return $data;
+    // }
+    function is_time_between($start_time, $end_time) {
+        // Get the current time as a string in the 24-hour format
+        $current_time = date('H:i');
+    
+        // Check if the end time is before the start time (indicating an overnight time range)
+        if ($end_time < $start_time) {
+            return ($current_time >= $start_time || $current_time <= $end_time);
+        } else {
+            return ($current_time >= $start_time && $current_time <= $end_time);
+        }
+    }
+
     public function set_homepage_based_on_time()
     {
         $is_enabled = get_option('set_homepage_enabled', true);
@@ -107,28 +126,24 @@ class DayAndNightDesign
             return;
         }
 
-        $hour = date('H:i');
-        $daytime_start = $timeFrom;
-        $daytime_end = $timeTo;
-        $currentTime = DateTime::createFromFormat('H:i', $hour);
-        $start = DateTime::createFromFormat('H:i', $daytime_start);
-        $end = DateTime::createFromFormat('H:i', $daytime_end);
+        $start_time = $timeFrom;
+        $end_time = $timeTo;
 
-        if ($currentTime > $start && $currentTime < $end) {
+        if ($this->is_time_between($start_time, $end_time)) {
             $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
             if ($nighttime_page) {
                 update_option('show_on_front', 'page');
                 update_option('page_on_front', $nighttime_page->ID);
-                add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
-                $this->redirect_to_night_page('night');
+                // add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
+                // $this->redirect_to_night_page('night');
             }
         } else {
             $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
             if ($daytime_page) {
                 update_option('show_on_front', 'page');
                 update_option('page_on_front', $daytime_page->ID);
-                add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
-                $this->redirect_to_night_page('day');
+                // add_action('template_redirect', array($this, 'redirect_to_night_page'), 10, 1);
+                // $this->redirect_to_night_page('day');
             }
         }
     }
@@ -249,6 +264,7 @@ class DayAndNightDesign
             </div>
             <div class="v-head-toggle">
                 <form id="switch" method="POST">
+                    <small><?php echo $is_enabled ? 'Enable | ' : 'Disabled | ' ?> </small>
                     <label class="switch">
                         <input type="hidden" name="set_homepage_enabled" value="false" <?php checked($is_enabled, false); ?>>
                         <input type="checkbox" name="set_homepage_enabled" id="witch_input" value="true" <?php checked($is_enabled, true); ?>>
@@ -273,11 +289,33 @@ class DayAndNightDesign
                         <div class="v-form-wrapper">
                             <div class="v-form-fields">
                                 <label for="setTimeFrom">From</label>
-                                <input type="time" id="setTimeFrom" value="<?php echo (empty($timeFrom) ? '' : $timeFrom) ?>" name="timeFrom">
+                                <select id="setTimeFrom" name="timeFrom">
+                                    <?php
+                                    $hourFrom = 1;
+                                    $minFrom = 0;
+                                    while ($hourFrom <= 24) {
+                                        $timeF = date('h:i A', strtotime("$hourFrom:$minFrom"));
+                                        $selectedFrom = $timeFrom == date('H:i', strtotime($timeF)) ? 'selected' : '';
+                                        echo "<option value='" . date('H:i', strtotime($timeF)) . "' $selectedFrom>$timeF</option>";
+                                        $hourFrom++;
+                                    }
+                                    ?>
+                                </select>
                             </div>
                             <div class="v-form-fields">
                                 <label for="setTimeTo">To</label>
-                                <input type="time" id="setTimeTo" value="<?php echo (empty($timeTo) ? '' : $timeTo) ?>" name="timeTo">
+                                <select id="setTimeTo" name="timeTo">
+                                    <?php
+                                    $hourTo = 1;
+                                    $minTo = 0;
+                                    while ($hourTo <= 24) {
+                                        $timeT = date('h:i A', strtotime("$hourTo:$minTo"));
+                                        $selectedTo = $timeTo == date('H:i', strtotime($timeT)) ? 'selected' : '';
+                                        echo "<option value='" . date('H:i', strtotime($timeT)) . "' $selectedTo>$timeT</option>";
+                                        $hourTo++;
+                                    }
+                                    ?>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -346,8 +384,6 @@ class DayAndNightDesign
                 <?php submit_button(); ?>
             </form>
         </div>
-
-
         <!-- End Container -->
 <?php
 
