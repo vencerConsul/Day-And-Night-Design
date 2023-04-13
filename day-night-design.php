@@ -41,13 +41,13 @@ class DayAndNightDesign
     {
         if ($column_name == 'custom_field') {
             $custom_field_value = get_post_meta($post_id, '_custom_field', true);
-            if(!empty($custom_field_value)){
-                if($custom_field_value == 'night'){
-                    echo '<small style="background: #1d2327; color: #ffffff; font-weight: 500; border-radius: 30px; padding: 1px; text-align: center; display: block; width: 50px !important;">'.strtoupper($custom_field_value).'</small>';
-                }else{
-                    echo '<small style="background: #fdaf00; color: #ffffff; font-weight: 500; border-radius: 30px; padding: 1px; text-align: center; display: block; width: 50px !important;">'.strtoupper($custom_field_value).'</small>';
+            if (!empty($custom_field_value)) {
+                if ($custom_field_value == 'night') {
+                    echo '<small style="background: #1d2327; color: #ffffff; font-weight: 500; border-radius: 30px; padding: 1px; text-align: center; display: block; width: 50px !important;">' . strtoupper($custom_field_value) . '</small>';
+                } else {
+                    echo '<small style="background: #fdaf00; color: #ffffff; font-weight: 500; border-radius: 30px; padding: 1px; text-align: center; display: block; width: 50px !important;">' . strtoupper($custom_field_value) . '</small>';
                 }
-            }else{
+            } else {
                 echo 'Choose Design mode';
             }
         }
@@ -127,11 +127,11 @@ class DayAndNightDesign
 
     public function setDayAndNightDesignActions()
     {
-        $isEnabledField = get_option('set_homepage_enabled', true);
+        $isDayAndNightEnabled = get_option('set_homepage_enabled', true);
         $timeFrom = get_option('timeFrom');
         $timeTo = get_option('timeTo');
 
-        if (!$isEnabledField) {
+        if (!$isDayAndNightEnabled) {
             $default_front_page = get_option('default_front_page', 0);
             if ($default_front_page) {
                 update_option('show_on_front', 'page');
@@ -143,33 +143,37 @@ class DayAndNightDesign
             return;
         }
 
-        if ($this->isTimeBetween($timeFrom, $timeTo)) {
-            $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
-            if ($nighttime_page) {
-                update_option('show_on_front', 'page');
-                update_option('page_on_front', $nighttime_page->ID);
+        if ($isDayAndNightEnabled) {
+            if ($this->isTimeBetween($timeFrom, $timeTo)) {
+                $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
+                if ($nighttime_page) {
+                    update_option('show_on_front', 'page');
+                    update_option('page_on_front', $nighttime_page->ID);
 
-                add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
-                $this->redirectToDayOrNight();
-            }
-        } else {
-            $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
-            if ($daytime_page) {
-                update_option('show_on_front', 'page');
-                update_option('page_on_front', $daytime_page->ID);
+                    add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
+                    $this->redirectToDayOrNight();
+                }
+            } else {
+                $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
+                if ($daytime_page) {
+                    update_option('show_on_front', 'page');
+                    update_option('page_on_front', $daytime_page->ID);
 
-                add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
-                $this->redirectToDayOrNight();
+                    add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
+                    $this->redirectToDayOrNight();
+                }
             }
         }
     }
 
     function redirectToDayOrNight()
     {
-        $isEnabledField = get_option('set_homepage_enabled', true);
-        if ($isEnabledField) {
+        $isDayAndNightEnabled = get_option('set_homepage_enabled', true);
+        if ($isDayAndNightEnabled) {
             $page_id = get_the_ID();
-            echo $page_id;
+            $night_page_id = get_post_meta($page_id, 'pageNight', true);
+            $day_page_id = get_post_meta($page_id, 'pageDay', true);
+            echo $night_page_id . '<br><br>' . $day_page_id;
             // Check if the current page has a custom field of 'day'
             // if ('night') {
             //     // Get the night page ID for the current day page
@@ -198,9 +202,9 @@ class DayAndNightDesign
     public function dayAndNightSettingsPage()
     {
         if (isset($_POST['set_homepage_enabled'])) { // toggle enable and disable switch
-            $isEnabledField = ($_POST['set_homepage_enabled'] == 'true');
-            update_option('set_homepage_enabled', $isEnabledField);
-            if ($isEnabledField) {
+            $isDayAndNightEnabled = ($_POST['set_homepage_enabled'] == 'true');
+            update_option('set_homepage_enabled', $isDayAndNightEnabled);
+            if ($isDayAndNightEnabled) {
                 add_settings_error(
                     'set_homepage_enabled',
                     'set_homepage_enabled_success',
@@ -252,15 +256,18 @@ class DayAndNightDesign
             foreach ($pagesDay as $pageDay) {
                 if (isset($_POST['pageNight'][$pageDay->ID])) {
                     update_post_meta($pageDay->ID, 'pageNight', $_POST['pageNight'][$pageDay->ID]);
-                    $nightID = get_post_meta($pageDay->ID, 'pageNight', true);
-                    update_post_meta($nightID, 'pageDay', $nightID);
+                }
+            }
+            foreach ($pagesNight as $pageNight) {
+                if (isset($_POST['pageDay'][$pageNight->ID])) {
+                    update_post_meta($pageNight->ID, 'pageDay', $_POST['pageDay'][$pageNight->ID]);
                 }
             }
         }
 
         $daytime_homepage_title = get_option('daytime_homepage_title');
         $nighttime_homepage_title = get_option('nighttime_homepage_title');
-        $isEnabledField = get_option('set_homepage_enabled', true);
+        $isDayAndNightEnabled = get_option('set_homepage_enabled', true);
         $timeFrom = get_option('timeFrom');
         $timeTo = get_option('timeTo');
 
@@ -272,10 +279,10 @@ class DayAndNightDesign
             </div>
             <div class="v-head-toggle">
                 <form id="switch" method="POST">
-                    <small><?php echo $isEnabledField ? 'Enable | ' : 'Disabled | ' ?> </small>
+                    <small><?php echo $isDayAndNightEnabled ? 'Enable | ' : 'Disabled | ' ?> </small>
                     <label class="switch">
-                        <input type="hidden" name="set_homepage_enabled" value="false" <?php checked($isEnabledField, false); ?>>
-                        <input type="checkbox" name="set_homepage_enabled" id="witch_input" value="true" <?php checked($isEnabledField, true); ?>>
+                        <input type="hidden" name="set_homepage_enabled" value="false" <?php checked($isDayAndNightEnabled, false); ?>>
+                        <input type="checkbox" name="set_homepage_enabled" id="witch_input" value="true" <?php checked($isDayAndNightEnabled, true); ?>>
                         <span class="slider round"></span>
                     </label>
                 </form>
@@ -357,7 +364,6 @@ class DayAndNightDesign
                     </div>
                     <?php if (count($pagesDay) > 0) { ?>
                         <h4>Set Night Design for Inner Pages</h4>
-
                         <div class="v-form-pages">
                             <table>
                                 <thead>
@@ -371,16 +377,15 @@ class DayAndNightDesign
                                         <tr>
                                             <td>
                                                 <p><?php echo $pageDay->post_title; ?></p>
-                                                <?php echo get_post_meta($pageDay->ID, 'pageDay', true) ?>
+                                                <input type="hidden" id="hiddenPageDay<?php echo $pageDay->ID ?>" value="<?php echo (empty(get_post_meta($pageDay->ID, 'pageDay', true)) ? '' : get_post_meta($pageDay->ID, 'pageDay', true)) ?>">
                                             </td>
                                             <td>
-                                                <select name="pageNight[<?php echo $pageDay->ID; ?>]" id="slectPageNight">
+                                                <select name="pageNight[<?php echo $pageDay->ID; ?>]" class="selectPageNight">
                                                     <option value="">-- Select page --</option>
                                                     <?php foreach ($pagesNight as $pageNight) { ?>
-                                                        <option value="<?php echo $pageNight->ID; ?>" <?php selected(get_post_meta($pageDay->ID, 'pageNight', true), $pageNight->ID); ?>><?php echo $pageNight->post_title; ?></option>
+                                                        <option data-day="<?php echo $pageDay->ID ?>" value="<?php echo $pageNight->ID; ?>" <?php selected(get_post_meta($pageDay->ID, 'pageNight', true), $pageNight->ID); ?>><?php echo $pageNight->post_title; ?></option>
                                                     <?php } ?>
                                                 </select>
-                                                <?php echo get_post_meta($pageDay->ID, 'pageNight', true) ?>
                                             </td>
                                         </tr>
                                     <?php } ?>
@@ -396,6 +401,7 @@ class DayAndNightDesign
             </form>
         </div>
         <!-- End Container -->
+        
 <?php
 
     }
