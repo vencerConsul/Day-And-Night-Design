@@ -29,6 +29,10 @@ class DayAndNightDesign
         add_action('save_post', array($this, 'saveMetaboxData'));
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
+        // global $wpdb;
+        // $table_name = $wpdb->prefix . 'postmeta';
+        // $wpdb->delete($table_name, array('meta_key' => 'pageNight'), array('%s'));
+        // $wpdb->delete($table_name, array('meta_key' => 'pageDay'), array('%s'));
     }
 
     function custom_pages_columns($columns)
@@ -144,14 +148,18 @@ class DayAndNightDesign
         }
 
         if ($isDayAndNightEnabled) {
+            $page_id = get_the_ID();
             if ($this->isTimeBetween($timeFrom, $timeTo)) {
                 $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
                 if ($nighttime_page) {
                     update_option('show_on_front', 'page');
                     update_option('page_on_front', $nighttime_page->ID);
 
-                    add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
-                    $this->redirectToDayOrNight();
+                    $night_page_id = get_post_meta($page_id, 'pageNight', true);
+                    if ($night_page_id) {
+                        wp_redirect(get_permalink($night_page_id), 301);
+                        exit;
+                    }
                 }
             } else {
                 $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
@@ -159,31 +167,13 @@ class DayAndNightDesign
                     update_option('show_on_front', 'page');
                     update_option('page_on_front', $daytime_page->ID);
 
-                    add_action('template_redirect', array($this, 'redirectToDayOrNight'), 10, 1);
-                    $this->redirectToDayOrNight();
+                    $day_page_id = get_post_meta($page_id, 'pageDay', true);
+                    if ($day_page_id) {
+                        wp_redirect(get_permalink($day_page_id), 301);
+                        exit;
+                    }
                 }
             }
-        }
-    }
-
-    function redirectToDayOrNight()
-    {
-        $isDayAndNightEnabled = get_option('set_homepage_enabled', true);
-        if ($isDayAndNightEnabled) {
-            $page_id = get_the_ID();
-            $night_page_id = get_post_meta($page_id, 'pageNight', true);
-            $day_page_id = get_post_meta($page_id, 'pageDay', true);
-            echo $night_page_id . '<br><br>' . $day_page_id;
-            // Check if the current page has a custom field of 'day'
-            // if ('night') {
-            //     // Get the night page ID for the current day page
-            //     $night_page_id = get_post_meta($page_id, 'pageNight', true);
-            //     if ($night_page_id) {
-            //         // Redirect to the night page
-            //         wp_redirect(get_permalink($night_page_id), 301);
-            //         exit;
-            //     }
-            // }
         }
     }
 
@@ -263,6 +253,12 @@ class DayAndNightDesign
                     update_post_meta($pageNight->ID, 'pageDay', $_POST['pageDay'][$pageNight->ID]);
                 }
             }
+            add_settings_error(
+                'submit_enabled',
+                'submit_enabled_success',
+                'All Changes are saved successfully',
+                'updated'
+            );
         }
 
         $daytime_homepage_title = get_option('daytime_homepage_title');
@@ -272,6 +268,13 @@ class DayAndNightDesign
         $timeTo = get_option('timeTo');
 
 ?>
+        <style>
+            .settings_page_day-and-night-settings #wpwrap {
+                background: url(<?php echo plugins_url('/assets/images/day-and-night.jpg', __FILE__) ?>) no-repeat;
+                background-position: center;
+                background-size: cover;
+            }
+        </style>
         <!-- Head -->
         <div id="v-head">
             <div class="v-head-logo">
@@ -279,7 +282,7 @@ class DayAndNightDesign
             </div>
             <div class="v-head-toggle">
                 <form id="switch" method="POST">
-                    <small><?php echo $isDayAndNightEnabled ? 'Enable | ' : 'Disabled | ' ?> </small>
+                    <p><?php echo $isDayAndNightEnabled ? 'Enabled' : 'Disabled' ?> </p>
                     <label class="switch">
                         <input type="hidden" name="set_homepage_enabled" value="false" <?php checked($isDayAndNightEnabled, false); ?>>
                         <input type="checkbox" name="set_homepage_enabled" id="witch_input" value="true" <?php checked($isDayAndNightEnabled, true); ?>>
@@ -293,72 +296,74 @@ class DayAndNightDesign
         <!-- Container -->
         <div class="v-container">
             <?= settings_errors() ?>
-            <h3>Introduction</h3>
+            <h3 style="color:#ffffff;">Introduction</h3>
             <p class="v-description">
                 The Day and Night Design allows website owners to create a dynamic website design that changes with the time of day. It automatically switches between a bright, bold color scheme for daytime and a darker, muted palette for nighttime. This is ideal for businesses with different audiences at different times of day, such as restaurants or nightclubs, and creates a unique and engaging website design.
             </p>
             <form method="POST">
                 <div class="v-form">
-                    <div class="v-form-group">
-                        <h4>Set Night Time</h4>
-                        <div class="v-form-wrapper">
-                            <div class="v-form-fields">
-                                <label for="setTimeFrom">From</label>
-                                <select id="setTimeFrom" name="timeFrom">
-                                    <?php
-                                    $hourFrom = 1;
-                                    $minFrom = 0;
-                                    while ($hourFrom <= 24) {
-                                        $timeF = date('h:i A', strtotime("$hourFrom:$minFrom"));
-                                        $selectedFrom = $timeFrom == date('H:i', strtotime($timeF)) ? 'selected' : '';
-                                        echo "<option value='" . date('H:i', strtotime($timeF)) . "' $selectedFrom>$timeF</option>";
-                                        $hourFrom++;
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="v-form-fields">
-                                <label for="setTimeTo">To</label>
-                                <select id="setTimeTo" name="timeTo">
-                                    <?php
-                                    $hourTo = 1;
-                                    $minTo = 0;
-                                    while ($hourTo <= 24) {
-                                        $timeT = date('h:i A', strtotime("$hourTo:$minTo"));
-                                        $selectedTo = $timeTo == date('H:i', strtotime($timeT)) ? 'selected' : '';
-                                        echo "<option value='" . date('H:i', strtotime($timeT)) . "' $selectedTo>$timeT</option>";
-                                        $hourTo++;
-                                    }
-                                    ?>
-                                </select>
+                    <div class="v-form-flex">
+                        <div class="v-form-group">
+                            <h4>Set Night Time</h4>
+                            <div class="v-form-wrapper">
+                                <div class="v-form-fields">
+                                    <label for="setTimeFrom">From</label>
+                                    <select id="setTimeFrom" name="timeFrom">
+                                        <?php
+                                        $hourFrom = 1;
+                                        $minFrom = 0;
+                                        while ($hourFrom <= 24) {
+                                            $timeF = date('h:i A', strtotime("$hourFrom:$minFrom"));
+                                            $selectedFrom = $timeFrom == date('H:i', strtotime($timeF)) ? 'selected' : '';
+                                            echo "<option value='" . date('H:i', strtotime($timeF)) . "' $selectedFrom>$timeF</option>";
+                                            $hourFrom++;
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="v-form-fields">
+                                    <label for="setTimeTo">To</label>
+                                    <select id="setTimeTo" name="timeTo">
+                                        <?php
+                                        $hourTo = 1;
+                                        $minTo = 0;
+                                        while ($hourTo <= 24) {
+                                            $timeT = date('h:i A', strtotime("$hourTo:$minTo"));
+                                            $selectedTo = $timeTo == date('H:i', strtotime($timeT)) ? 'selected' : '';
+                                            echo "<option value='" . date('H:i', strtotime($timeT)) . "' $selectedTo>$timeT</option>";
+                                            $hourTo++;
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="v-form-group">
-                        <h4>Set Home page</h4>
-                        <div class="v-form-wrapper">
-                            <div class="v-form-fields">
-                                <label for="dayTime">Day Time</label>
-                                <select name="daytime_homepage_title" id="dayTime">
-                                    <?php
-                                    $pages = get_pages();
-                                    foreach ($pages as $page) {
-                                        $selected = ($daytime_homepage_title == $page->post_title) ? 'selected' : '';
-                                        echo '<option value="' . $page->post_title . '" ' . $selected . '>' . $page->post_title . '</option>';
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="v-form-fields">
-                                <label for="nightTime">Night Time</label>
-                                <select name="nighttime_homepage_title" id="nightTime">
-                                    <?php
-                                    foreach ($pages as $page) {
-                                        $selected = ($nighttime_homepage_title == $page->post_title) ? 'selected' : '';
-                                        echo '<option value="' . $page->post_title . '" ' . $selected . '>' . $page->post_title . '</option>';
-                                    }
-                                    ?>
-                                </select>
+                        <div class="v-form-group">
+                            <h4>Set Home page</h4>
+                            <div class="v-form-wrapper">
+                                <div class="v-form-fields">
+                                    <label for="dayTime">Day Time</label>
+                                    <select name="daytime_homepage_title" id="dayTime">
+                                        <?php
+                                        $pages = get_pages();
+                                        foreach ($pages as $page) {
+                                            $selected = ($daytime_homepage_title == $page->post_title) ? 'selected' : '';
+                                            echo '<option value="' . $page->post_title . '" ' . $selected . '>' . $page->post_title . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="v-form-fields">
+                                    <label for="nightTime">Night Time</label>
+                                    <select name="nighttime_homepage_title" id="nightTime">
+                                        <?php
+                                        foreach ($pages as $page) {
+                                            $selected = ($nighttime_homepage_title == $page->post_title) ? 'selected' : '';
+                                            echo '<option value="' . $page->post_title . '" ' . $selected . '>' . $page->post_title . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -377,7 +382,7 @@ class DayAndNightDesign
                                         <tr>
                                             <td>
                                                 <p><?php echo $pageDay->post_title; ?></p>
-                                                <input type="hidden" id="hiddenPageDay<?php echo $pageDay->ID ?>" value="<?php echo (empty(get_post_meta($pageDay->ID, 'pageDay', true)) ? '' : get_post_meta($pageDay->ID, 'pageDay', true)) ?>">
+                                                <input type="hidden" id="hiddenPageDay<?php echo $pageDay->ID ?>" value="<?php echo (empty(get_post_meta($pageDay->ID, 'pageNight', true)) ? '' : $pageDay->ID) ?>" name="pageDay[<?php echo (empty(get_post_meta($pageDay->ID, 'pageNight', true)) ? '' : get_post_meta($pageDay->ID, 'pageNight', true)) ?>]">
                                             </td>
                                             <td>
                                                 <select name="pageNight[<?php echo $pageDay->ID; ?>]" class="selectPageNight">
@@ -401,7 +406,7 @@ class DayAndNightDesign
             </form>
         </div>
         <!-- End Container -->
-        
+
 <?php
 
     }
