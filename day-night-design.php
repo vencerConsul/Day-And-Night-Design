@@ -198,14 +198,14 @@ class DayAndNightDesign
                 add_settings_error(
                     'set_homepage_enabled',
                     'set_homepage_enabled_success',
-                    'Day and Night Design is Fucking on.',
+                    'Day and Night Design enabled.',
                     'updated'
                 );
             } else {
                 add_settings_error(
                     'set_homepage_enabled',
                     'set_homepage_enabled_success',
-                    'Day and Night Design is Fucking off.',
+                    'Day and Night Design disabled.',
                     'warning'
                 );
             }
@@ -366,8 +366,13 @@ class DayAndNightDesign
                                 </div>
                             </div>
                         </div>
+                        <div class="v-form-group">
+                            <h4>Add additional class</h3>
+                            <input type="text" class="additional-class" placeholder="Add Class Name">
+                        </div>
                     </div>
                     <?php if (count($pagesDay) > 0) { ?>
+                        <hr>
                         <h4>Set Night Design for Inner Pages</h4>
                         <div class="v-form-pages">
                             <table>
@@ -401,6 +406,7 @@ class DayAndNightDesign
                         <h4>No current page with Design mode. Choose a Design mode for your pages</h4>
                         <p>Note: If you have a existing page, just navigate to the page you want to add a night design and choose a "Design mode" on the right side of your page editor</p>
                     <?php } ?>
+
                 </div>
                 <?php submit_button(); ?>
             </form>
