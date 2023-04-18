@@ -29,10 +29,29 @@ class DayAndNightDesign
         add_action('save_post', array($this, 'saveMetaboxData'));
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
-        // global $wpdb;
-        // $table_name = $wpdb->prefix . 'postmeta';
-        // $wpdb->delete($table_name, array('meta_key' => 'pageNight'), array('%s'));
-        // $wpdb->delete($table_name, array('meta_key' => 'pageDay'), array('%s'));
+    }
+
+    function resetAllSettings()
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'postmeta';
+        $wpdb->delete($table_name, array('meta_key' => 'pageNight'), array('%s'));
+        $wpdb->delete($table_name, array('meta_key' => 'pageDay'), array('%s'));
+        $wpdb->delete($table_name, array('meta_key' => 'show_on_front'), array('%s'));
+        $wpdb->delete($table_name, array('meta_key' => 'page_on_front'), array('%s'));
+        delete_option('show_on_front');
+        delete_option('page_on_front');
+        delete_option('daytime_homepage_title');
+        delete_option('nighttime_homepage_title');
+        delete_option('timeFrom');
+        delete_option('timeTo');
+
+        add_settings_error(
+            'reset',
+            'reset_success',
+            'Settings successfully reset.',
+            'success'
+        );
     }
 
     function custom_pages_columns($columns)
@@ -192,7 +211,7 @@ class DayAndNightDesign
     public function dayAndNightSettingsPage()
     {
         if (isset($_POST['set_homepage_enabled'])) { // toggle enable and disable switch
-            $isDayAndNightEnabled = ($_POST['set_homepage_enabled'] == 'true');
+            $isDayAndNightEnabled = (sanitize_text_field($_POST['set_homepage_enabled']) == 'true');
             update_option('set_homepage_enabled', $isDayAndNightEnabled);
             if ($isDayAndNightEnabled) {
                 add_settings_error(
@@ -233,32 +252,44 @@ class DayAndNightDesign
         );
         $pagesNight = get_posts($nightArgs);
 
-        if (isset($_POST['submit'])) {
+        if (isset($_POST['save_settings'])) {
+
+            if(empty($_POST['daytime_homepage_title']) || empty($_POST['nighttime_homepage_title'])){
+                add_settings_error('save_settings', 'save_settings_error', 'Day Time and Night Time field for homepage should not be empty.', 'error');
+            }
+
             update_option('daytime_homepage_title', sanitize_text_field($_POST['daytime_homepage_title']));
             update_option('nighttime_homepage_title', sanitize_text_field($_POST['nighttime_homepage_title']));
+            if(empty($_POST['timeFrom']) || empty($_POST['timeTo'])){
+                add_settings_error('save_settings', 'save_settings_error', 'Field From and To should not be empty.', 'error');
+            }
 
             if ($this->isValidTimeFormat($_POST['timeFrom'], $_POST['timeTo'])) {
                 update_option('timeFrom', $_POST['timeFrom']);
                 update_option('timeTo', $_POST['timeTo']);
             } else {
-                add_settings_error('submit', 'submit_error', 'Invalid time format.', 'error');
+                add_settings_error('save_settings', 'save_settings_error', 'Invalid time format.', 'error');
             }
             foreach ($pagesDay as $pageDay) {
                 if (isset($_POST['pageNight'][$pageDay->ID])) {
-                    update_post_meta($pageDay->ID, 'pageNight', $_POST['pageNight'][$pageDay->ID]);
+                    update_post_meta($pageDay->ID, 'pageNight', sanitize_text_field($_POST['pageNight'][$pageDay->ID]));
                 }
             }
             foreach ($pagesNight as $pageNight) {
                 if (isset($_POST['pageDay'][$pageNight->ID])) {
-                    update_post_meta($pageNight->ID, 'pageDay', $_POST['pageDay'][$pageNight->ID]);
+                    update_post_meta($pageNight->ID, 'pageDay', sanitize_text_field($_POST['pageDay'][$pageNight->ID]));
                 }
             }
             add_settings_error(
-                'submit_enabled',
-                'submit_enabled_success',
+                'save_settings_enabled',
+                'save_settings_enabled_success',
                 'All Changes are saved successfully',
                 'updated'
             );
+        }
+
+        if (isset($_POST['reset'])) {
+            $this->resetAllSettings();
         }
 
         $daytime_homepage_title = get_option('daytime_homepage_title');
@@ -271,7 +302,7 @@ class DayAndNightDesign
         <style>
             .settings_page_day-and-night-settings #wpwrap {
                 background: url(<?php echo plugins_url('/assets/images/day-and-night.jpg', __FILE__) ?>) no-repeat;
-                background-position: center;
+                background-position: right;
                 background-size: cover;
             }
         </style>
@@ -289,6 +320,10 @@ class DayAndNightDesign
                         <span class="slider round"></span>
                     </label>
                 </form>
+                <button class="save_settings">Save Settings</button>
+                <form method="POST">
+                    <input type="submit" role="button" value="Reset Settings" name="reset" class="reset_settings">
+                </form>
             </div>
         </div>
         <!-- End Head -->
@@ -300,7 +335,8 @@ class DayAndNightDesign
             <p class="v-description">
                 The Day and Night Design allows website owners to create a dynamic website design that changes with the time of day. It automatically switches between a bright, bold color scheme for daytime and a darker, muted palette for nighttime. This is ideal for businesses with different audiences at different times of day, such as restaurants or nightclubs, and creates a unique and engaging website design.
             </p>
-            <form method="POST">
+            <form method="POST" id="save_settings">
+                <input type="hidden" name="save_settings">
                 <div class="v-form">
                     <div class="v-form-flex">
                         <div class="v-form-group">
@@ -309,6 +345,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="setTimeFrom">From</label>
                                     <select id="setTimeFrom" name="timeFrom">
+                                    <option value="">-- Select time --</option>
                                         <?php
                                         $hourFrom = 1;
                                         $minFrom = 0;
@@ -324,6 +361,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="setTimeTo">To</label>
                                     <select id="setTimeTo" name="timeTo">
+                                    <option value="">-- Select time --</option>
                                         <?php
                                         $hourTo = 1;
                                         $minTo = 0;
@@ -344,6 +382,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="dayTime">Day Time</label>
                                     <select name="daytime_homepage_title" id="dayTime">
+                                        <option value="">-- Select page --</option>
                                         <?php
                                         $pages = get_pages();
                                         foreach ($pages as $page) {
@@ -356,6 +395,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="nightTime">Night Time</label>
                                     <select name="nighttime_homepage_title" id="nightTime">
+                                        <option value="">-- Select page --</option>
                                         <?php
                                         foreach ($pages as $page) {
                                             $selected = ($nighttime_homepage_title == $page->post_title) ? 'selected' : '';
@@ -366,13 +406,13 @@ class DayAndNightDesign
                                 </div>
                             </div>
                         </div>
-                        <div class="v-form-group">
+                        <!-- <div class="v-form-group">
                             <h4>Add additional class</h3>
                             <input type="text" class="additional-class" placeholder="Add Class Name">
-                        </div>
+                        </div> -->
                     </div>
                     <?php if (count($pagesDay) > 0) { ?>
-                        <hr>
+                        <!-- <hr> -->
                         <h4>Set Night Design for Inner Pages</h4>
                         <div class="v-form-pages">
                             <table>
@@ -408,7 +448,7 @@ class DayAndNightDesign
                     <?php } ?>
 
                 </div>
-                <?php submit_button(); ?>
+                <!-- <?php submit_button(); ?> -->
             </form>
         </div>
         <!-- End Container -->

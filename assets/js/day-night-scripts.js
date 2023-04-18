@@ -6,6 +6,10 @@ window.onload = () => {
         switchForm.submit();
     })
 
+    const wpBody = document.querySelector('.settings_page_day-and-night-settings #wpbody-content');
+    const vHead = document.querySelector('#v-head');
+    wpBody.style.paddingTop = `${vHead.offsetHeight}px`;
+
     const selectPageNight = document.querySelectorAll('.selectPageNight');
     selectPageNight.forEach(item => {
         item.addEventListener('change', (e) => {
@@ -13,5 +17,10 @@ window.onload = () => {
             document.querySelector(`#hiddenPageDay${dataDay}`).setAttribute('name', `pageDay[${e.target.value}]`);
             document.querySelector(`#hiddenPageDay${dataDay}`).value = dataDay;
         });
+    });
+
+    const saveSettings = document.querySelector('.save_settings');
+    saveSettings.addEventListener('click', ()=>{
+        document.querySelector('#save_settings').submit();
     });
 }
