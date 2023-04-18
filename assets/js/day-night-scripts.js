@@ -14,4 +14,9 @@ window.onload = () => {
             document.querySelector(`#hiddenPageDay${dataDay}`).value = dataDay;
         });
     });
+
+    const saveSettings = document.querySelector('.save_settings');
+    saveSettings.addEventListener('click', ()=>{
+        document.querySelector('#save_settings').submit();
+    });
 }
