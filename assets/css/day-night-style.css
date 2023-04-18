@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 
-#wpcontent {
+.settings_page_day-and-night-settings #wpcontent {
     padding-left: unset !important;
 }
 
@@ -64,7 +64,7 @@
 }
 
 #v-head .v-head-toggle input:checked+.slider {
-    background-color: #f6981d;
+    background-color: #01518b;
 }
 
 #v-head .v-head-toggle input:focus+.slider {
@@ -122,8 +122,7 @@
 /* container */
 
 .v-container {
-    margin-top: 80px;
-    padding: 20px 50px;
+    padding: 0 30px;
 }
 .v-container .notice {
     background: rgba( 250, 249, 249, 0.3 );

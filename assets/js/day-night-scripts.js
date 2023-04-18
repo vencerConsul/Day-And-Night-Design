@@ -6,6 +6,10 @@ window.onload = () => {
         switchForm.submit();
     })
 
+    const wpBody = document.querySelector('.settings_page_day-and-night-settings #wpbody-content');
+    const vHead = document.querySelector('#v-head');
+    wpBody.style.paddingTop = `${vHead.offsetHeight}px`;
+
     const selectPageNight = document.querySelectorAll('.selectPageNight');
     selectPageNight.forEach(item => {
         item.addEventListener('change', (e) => {

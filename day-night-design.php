@@ -302,7 +302,7 @@ class DayAndNightDesign
         <style>
             .settings_page_day-and-night-settings #wpwrap {
                 background: url(<?php echo plugins_url('/assets/images/day-and-night.jpg', __FILE__) ?>) no-repeat;
-                background-position: center;
+                background-position: right;
                 background-size: cover;
             }
         </style>
