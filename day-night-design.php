@@ -29,6 +29,7 @@ class DayAndNightDesign
         add_action('save_post', array($this, 'saveMetaboxData'));
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
+        // add_filter('body_class', array($this, 'addClass'));
     }
 
     function resetAllSettings()
@@ -54,13 +55,13 @@ class DayAndNightDesign
         );
     }
 
-    function custom_pages_columns($columns)
+    public function custom_pages_columns($columns)
     {
         $columns['custom_field'] = 'Design Mode';
         return $columns;
     }
 
-    function custom_pages_columns_content($column_name, $post_id)
+    public function custom_pages_columns_content($column_name, $post_id)
     {
         if ($column_name == 'custom_field') {
             $custom_field_value = get_post_meta($post_id, '_custom_field', true);
@@ -148,6 +149,18 @@ class DayAndNightDesign
         }
     }
 
+    public function isValidTimeFormat($f, $t) // check time if valid format
+    {
+        $from = sanitize_text_field($f);
+        $to = sanitize_text_field($t);
+
+        if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $from) && preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $to)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function setDayAndNightDesignActions()
     {
         $isDayAndNightEnabled = get_option('set_homepage_enabled', true);
@@ -179,6 +192,7 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($night_page_id), 301);
                         exit;
                     }
+                    // $this->addClass('v-mode-night');
                 }
             } else {
                 $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
@@ -191,21 +205,16 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($day_page_id), 301);
                         exit;
                     }
+                    // $this->addClass('v-mode-day');
                 }
             }
         }
     }
 
-    public function isValidTimeFormat($f, $t) // check time if valid format
+    public function addClass($mode)
     {
-        $from = sanitize_text_field($f);
-        $to = sanitize_text_field($t);
-
-        if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $from) && preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $to)) {
-            return true;
-        } else {
-            return false;
-        }
+        $classes[] = $mode;
+        return $classes;
     }
 
     public function dayAndNightSettingsPage()
@@ -254,13 +263,13 @@ class DayAndNightDesign
 
         if (isset($_POST['save_settings'])) {
 
-            if(empty($_POST['daytime_homepage_title']) || empty($_POST['nighttime_homepage_title'])){
+            if (empty($_POST['daytime_homepage_title']) || empty($_POST['nighttime_homepage_title'])) {
                 add_settings_error('save_settings', 'save_settings_error', 'Day Time and Night Time field for homepage should not be empty.', 'error');
             }
 
             update_option('daytime_homepage_title', sanitize_text_field($_POST['daytime_homepage_title']));
             update_option('nighttime_homepage_title', sanitize_text_field($_POST['nighttime_homepage_title']));
-            if(empty($_POST['timeFrom']) || empty($_POST['timeTo'])){
+            if (empty($_POST['timeFrom']) || empty($_POST['timeTo'])) {
                 add_settings_error('save_settings', 'save_settings_error', 'Field From and To should not be empty.', 'error');
             }
 
@@ -345,7 +354,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="setTimeFrom">From</label>
                                     <select id="setTimeFrom" name="timeFrom">
-                                    <option value="">-- Select time --</option>
+                                        <option value="">-- Select time --</option>
                                         <?php
                                         $hourFrom = 1;
                                         $minFrom = 0;
@@ -361,7 +370,7 @@ class DayAndNightDesign
                                 <div class="v-form-fields">
                                     <label for="setTimeTo">To</label>
                                     <select id="setTimeTo" name="timeTo">
-                                    <option value="">-- Select time --</option>
+                                        <option value="">-- Select time --</option>
                                         <?php
                                         $hourTo = 1;
                                         $minTo = 0;
