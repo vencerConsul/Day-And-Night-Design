@@ -89,7 +89,7 @@ class DayAndNightDesign
         $json = file_get_contents($url);
         $data = json_decode($json, true);
         $timezone = $data['timezone'];
-        date_default_timezone_set($timezone);
+        date_default_timezone_set('Asia/Manila');
     }
 
     public function addAdminSubMenuSettings() // add admin dashboard sub menu settings
