@@ -85,11 +85,10 @@ class DayAndNightDesign
 
     public function loadAndCheckTimeZone() // load api time zone and set the default timezone base on current location
     {
-        $url = "http://ip-api.com/json/";
-        $json = file_get_contents($url);
-        $data = json_decode($json, true);
-        $timezone = $data['timezone'];
-        date_default_timezone_set('Asia/Manila');
+        $timezone = get_option('timezone_string');
+        if ($timezone) {
+            date_default_timezone_set($timezone);
+        }
     }
 
     public function addAdminSubMenuSettings() // add admin dashboard sub menu settings
@@ -344,6 +343,17 @@ class DayAndNightDesign
             <p class="v-description">
                 The Day and Night Design allows website owners to create a dynamic website design that changes with the time of day. It automatically switches between a bright, bold color scheme for daytime and a darker, muted palette for nighttime. This is ideal for businesses with different audiences at different times of day, such as restaurants or nightclubs, and creates a unique and engaging website design.
             </p>
+            <h4 style="color:#ffffff;font-size:20px;">Timezone: 
+            <?php 
+                $timezone = get_option('timezone_string');
+                if ($timezone) {
+                    echo "<small style='color:yellow;'>".$timezone."</small>";
+                } else {
+                    echo "<small style='color:yellow;'>WordPress timezone is not set. To set your Timezone click <a style='color:#ffffff;' href='".admin_url()."/options-general.php#timezone_string'>here</a></small>";
+                }
+            ?>
+            </h4>
+            <p style='color:#ffffff;'>Change Timezone <a style='color:#ffffff;' href='<?= admin_url() ?>/options-general.php#timezone_string'>here</a></small></p>
             <form method="POST" id="save_settings">
                 <input type="hidden" name="save_settings">
                 <div class="v-form">
