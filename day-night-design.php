@@ -29,7 +29,7 @@ class DayAndNightDesign
         add_action('save_post', array($this, 'saveMetaboxData'));
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
-        // add_filter('body_class', array($this, 'addClass'));
+        add_filter('body_class', array($this, 'addClass'));
     }
 
     function resetAllSettings()
@@ -83,7 +83,7 @@ class DayAndNightDesign
         wp_enqueue_script('day-and-night-design-styles', plugin_dir_url(__FILE__) . 'assets/js/day-night-scripts.js');
     }
 
-    public function loadAndCheckTimeZone() // load api time zone and set the default timezone base on current location
+    public function loadAndCheckTimeZone() // get the current wordpress timezone
     {
         $timezone = get_option('timezone_string');
         if ($timezone) {
@@ -191,7 +191,7 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($night_page_id), 301);
                         exit;
                     }
-                    // $this->addClass('v-mode-night');
+                    $this->addClass('v-mode-night');
                 }
             } else {
                 $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
@@ -204,7 +204,7 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($day_page_id), 301);
                         exit;
                     }
-                    // $this->addClass('v-mode-day');
+                    $this->addClass('v-mode-day');
                 }
             }
         }
@@ -219,7 +219,7 @@ class DayAndNightDesign
     public function dayAndNightSettingsPage()
     {
         if (isset($_POST['set_homepage_enabled'])) { // toggle enable and disable switch
-            $isDayAndNightEnabled = (sanitize_text_field($_POST['set_homepage_enabled']) == 'true');
+            $isDayAndNightEnabled = $_POST['set_homepage_enabled'];
             update_option('set_homepage_enabled', $isDayAndNightEnabled);
             if ($isDayAndNightEnabled) {
                 add_settings_error(
