@@ -222,8 +222,8 @@ class DayAndNightDesign
     {
         if (isset($_POST['set_homepage_enabled'])) { // toggle enable and disable switch
             $isDayAndNightEnabled = $_POST['set_homepage_enabled'];
+            update_option('set_homepage_enabled', $_POST['set_homepage_enabled']);
             if ($isDayAndNightEnabled) {
-                update_option('set_homepage_enabled', true);
                 add_settings_error(
                     'set_homepage_enabled',
                     'set_homepage_enabled_success',
@@ -231,7 +231,6 @@ class DayAndNightDesign
                     'updated'
                 );
             } else {
-                update_option('set_homepage_enabled', false);
                 add_settings_error(
                     'set_homepage_enabled',
                     'set_homepage_enabled_success',
