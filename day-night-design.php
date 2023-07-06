@@ -29,7 +29,11 @@ class DayAndNightDesign
         add_action('save_post', array($this, 'saveMetaboxData'));
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
-        add_filter('body_class', array($this, 'addClass'));
+        $nighttime_page = get_page_by_title(get_option('nighttime_homepage_title', 'Nighttime Page'));
+        if ($nighttime_page) {
+            add_filter('body_class', array($this, 'addClass'));
+        }
+        
     }
 
     function resetAllSettings()
@@ -191,7 +195,6 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($night_page_id), 301);
                         exit;
                     }
-                    $this->addClass();
                 }
             } else {
                 $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
