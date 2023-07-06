@@ -325,7 +325,6 @@ class DayAndNightDesign
                 <form id="switch" method="POST">
                     <p><?php echo $isDayAndNightEnabled ? 'Enabled' : 'Disabled' ?> </p>
                     <label class="switch">
-                        <input type="hidden" name="set_homepage_enabled" value="false" <?php checked($isDayAndNightEnabled, false); ?>>
                         <input type="checkbox" name="set_homepage_enabled" id="witch_input" value="true" <?php checked($isDayAndNightEnabled, true); ?>>
                         <span class="slider round"></span>
                     </label>
