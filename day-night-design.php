@@ -20,7 +20,6 @@ class DayAndNightDesign
 
     public function __construct()
     {
-        $page_id = get_the_ID();
         add_action('admin_enqueue_scripts', array($this, 'loadAssets'));
         $this->loadAndCheckTimeZone();
         add_action('wp', array($this, 'setDayAndNightDesignActions'));
@@ -31,8 +30,9 @@ class DayAndNightDesign
         add_filter('manage_pages_columns', array($this, 'custom_pages_columns'));
         add_action('manage_pages_custom_column', array($this, 'custom_pages_columns_content'), 10, 2);
 
-        $night_page_id = get_post_meta($page_id, 'pageNight', true);
-        if ($night_page_id) {
+        $timeFrom = get_option('timeFrom');
+        $timeTo = get_option('timeTo');
+        if ($this->isTimeBetween($timeFrom, $timeTo)) {
             add_filter('body_class', array($this, 'addClass'));
         }
     }
