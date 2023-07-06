@@ -204,15 +204,14 @@ class DayAndNightDesign
                         wp_redirect(get_permalink($day_page_id), 301);
                         exit;
                     }
-                    $this->addClass('v-mode-day');
                 }
             }
         }
     }
 
-    public function addClass($mode)
+    public function addClass($classes)
     {
-        $classes[] = $mode;
+        $classes[] = 'v-mode-night';
         return $classes;
     }
 
