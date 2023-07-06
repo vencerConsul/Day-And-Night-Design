@@ -189,9 +189,9 @@ class DayAndNightDesign
                     $night_page_id = get_post_meta($page_id, 'pageNight', true);
                     if ($night_page_id) {
                         wp_redirect(get_permalink($night_page_id), 301);
-                        $this->addClass('v-mode-night');
                         exit;
                     }
+                    $this->addClass();
                 }
             } else {
                 $daytime_page = get_page_by_title(get_option('daytime_homepage_title', 'Daytime Page'));
@@ -211,7 +211,7 @@ class DayAndNightDesign
 
     public function addClass($classes)
     {
-        $classes[] = $classes;
+        $classes[] = 'v-mode-night';
         return $classes;
     }
 
