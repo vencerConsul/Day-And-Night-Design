@@ -221,7 +221,7 @@ class DayAndNightDesign
     public function dayAndNightSettingsPage()
     {
         if (isset($_POST['set_homepage_enabled'])) { // toggle enable and disable switch
-            $isDayAndNightEnabled = $_POST['set_homepage_enabled'];
+            $isDayAndNightEnabled = $_POST['set_homepage_enabled'] == true ? get_option('set_homepage_enabled', true) : false;
             update_option('set_homepage_enabled', $isDayAndNightEnabled);
             if ($isDayAndNightEnabled) {
                 add_settings_error(
